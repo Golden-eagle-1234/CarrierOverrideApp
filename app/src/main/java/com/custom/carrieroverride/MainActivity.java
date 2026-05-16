@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -98,6 +97,19 @@ public class MainActivity extends Activity {
     private void loadSims() {
         simContainer.removeAllViews();
 
+        // Request permission if needed
+        if (checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.READ_PHONE_STATE}, 1);
+            TextView msg = new TextView(this);
+            msg.setText("📋 Please grant Phone permission and reopen the app");
+            msg.setTextColor(Color.parseColor("#AAAACC"));
+            msg.setTextSize(15);
+            msg.setPadding(dp(8), dp(16), dp(8), dp(16));
+            simContainer.addView(msg);
+            return;
+        }
+
         try {
             SubscriptionManager sm = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
             List<SubscriptionInfo> sims = sm.getActiveSubscriptionInfoList();
@@ -128,6 +140,14 @@ public class MainActivity extends Activity {
             err.setTextColor(Color.parseColor("#FF6B6B"));
             err.setTextSize(14);
             simContainer.addView(err);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            loadSims();
         }
     }
 
